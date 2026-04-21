@@ -1,0 +1,64 @@
+version: "1.0"
+rules:
+  - id: glycemie_critique_haute
+    pathologie: diabete
+    parametre: glycemie
+    operateur: ">"
+    seuil: 2.5
+    unite: "g/L"
+    severite: critique
+    message: "Glycémie très élevée, contactez immédiatement votre médecin"
+
+  - id: glycemie_critique_basse
+    pathologie: diabete
+    parametre: glycemie
+    operateur: "<"
+    seuil: 0.6
+    unite: "g/L"
+    severite: critique
+    message: "Hypoglycémie sévère, resucrez-vous immédiatement"
+
+  - id: glycemie_elevee
+    pathologie: diabete
+    parametre: glycemie
+    operateur: ">"
+    seuil: 1.8
+    unite: "g/L"
+    severite: moderee
+    message: "Glycémie élevée, surveillez votre alimentation"
+
+  - id: tension_critique
+    pathologie: hypertension
+    parametre: tension_systolique
+    operateur: ">"
+    seuil: 180
+    unite: "mmHg"
+    severite: critique
+    message: "Tension artérielle très élevée, consultez en urgence"
+
+  - id: tension_elevee
+    pathologie: hypertension
+    parametre: tension_systolique
+    operateur: ">"
+    seuil: 160
+    unite: "mmHg"
+    severite: haute
+    message: "Tension élevée, à surveiller"
+
+  - id: tachycardie
+    pathologie: insuffisance_cardiaque
+    parametre: frequence_cardiaque
+    operateur: ">"
+    seuil: 110
+    unite: "bpm"
+    severite: haute
+    message: "Fréquence cardiaque élevée au repos"
+
+  - id: poids_eleve
+    pathologie: insuffisance_cardiaque
+    parametre: poids
+    operateur: ">"
+    seuil: 100
+    unite: "kg"
+    severite: moderee
+    message: "Surveillez votre poids, risque de décompensation"

@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: meditrack-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: meditrack
+      MYSQL_USER: meditrack
+      MYSQL_PASSWORD: meditrack123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  patient-profile-service:
+    build: ./patient-profile-service
+    container_name: meditrack-patient
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: mysql+pymysql://meditrack:meditrack123@mysql:3306/meditrack
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  vitals-ingestion-service:
+    build: ./vitals-ingestion-service
+    container_name: meditrack-vitals
+    ports:
+      - "8002:8000"
+    environment:
+      DATABASE_URL: mysql+pymysql://meditrack:meditrack123@mysql:3306/meditrack
+      RULES_ENGINE_URL: http://rules-engine-service:8000
+      ALERT_SERVICE_URL: http://alert-service:8000
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  rules-engine-service:
+    build: ./rules-engine-service
+    container_name: meditrack-rules
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./rules.yaml:/app/rules.yaml
+
+  alert-service:
+    build: ./alert-service
+    container_name: meditrack-alert
+    ports:
+      - "8004:8000"
+    environment:
+      DATABASE_URL: mysql+pymysql://meditrack:meditrack123@mysql:3306/meditrack
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  reporting-service:
+    build: ./reporting-service
+    container_name: meditrack-reporting
+    ports:
+      - "8005:8000"
+    environment:
+      DATABASE_URL: mysql+pymysql://meditrack:meditrack123@mysql:3306/meditrack
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    image: nginx:alpine
+    container_name: meditrack-frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+
+volumes:
+  mysql_data:

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrack</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, Arial, sans-serif; background: #f0f4f8; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1 { color: #2563eb; margin-bottom: 20px; }
+        h2 { color: #374151; margin-bottom: 15px; font-size: 18px; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; }
+        button { background: #2563eb; color: white; border: none; cursor: pointer; font-weight: 600; }
+        button:hover { background: #1d4ed8; }
+        .alert { padding: 12px; border-radius: 8px; margin: 8px 0; }
+        .alert-critique { background: #fee2e2; color: #991b1b; border-left: 4px solid #dc2626; }
+        .alert-haute { background: #fed7aa; color: #9a3412; border-left: 4px solid #ea580c; }
+        .alert-moderee { background: #fef3c7; color: #92400e; border-left: 4px solid #d97706; }
+        .vital-item { padding: 10px; border-bottom: 1px solid #e5e7eb; }
+        .success { background: #d1fae5; color: #065f46; padding: 10px; border-radius: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 MediTrack</h1>
+
+        <div class="card">
+            <h2>Saisir une mesure</h2>
+            <select id="patient">
+                <option value="1">Ahmed Benali</option>
+                <option value="2">Fatima Alaoui</option>
+                <option value="3">Mohamed Tazi</option>
+            </select>
+            <select id="type">
+                <option value="glycemie">Glycémie (g/L)</option>
+                <option value="tension_systolique">Tension systolique (mmHg)</option>
+                <option value="frequence_cardiaque">Fréquence cardiaque (bpm)</option>
+                <option value="poids">Poids (kg)</option>
+            </select>
+            <input type="number" id="valeur" step="0.1" placeholder="Valeur">
+            <button onclick="ajouterMesure()">Enregistrer</button>
+            <div id="message"></div>
+        </div>
+
+        <div class="card">
+            <h2>Alertes récentes</h2>
+            <div id="alerts">Chargement...</div>
+        </div>
+
+        <div class="card">
+            <h2>Dernières mesures</h2>
+            <div id="vitals">Chargement...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_VITALS = 'http://localhost:8002';
+        const API_ALERTS = 'http://localhost:8004';
+
+        async function ajouterMesure() {
+            const patient_id = parseInt(document.getElementById('patient').value);
+            const type_mesure = document.getElementById('type').value;
+            const valeur = parseFloat(document.getElementById('valeur').value);
+
+            if (!valeur) {
+                alert('Saisissez une valeur');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_VITALS}/vitals`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({patient_id, type_mesure, valeur})
+                });
+                if (res.ok) {
+                    document.getElementById('message').innerHTML = '<div class="success">✓ Mesure enregistrée</div>';
+                    document.getElementById('valeur').value = '';
+                    setTimeout(() => {
+                        document.getElementById('message').innerHTML = '';
+                        chargerAlertes();
+                        chargerVitals();
+                    }, 1000);
+                }
+            } catch (e) {
+                alert('Erreur: ' + e.message);
+            }
+        }
+
+        async function chargerAlertes() {
+            try {
+                const res = await fetch(`${API_ALERTS}/alerts`);
+                const alerts = await res.json();
+                const container = document.getElementById('alerts');
+                if (alerts.length === 0) {
+                    container.innerHTML = '<p>Aucune alerte</p>';
+                } else {
+                    container.innerHTML = alerts.slice(0, 5).map(a =>
+                        `<div class="alert alert-${a.severite}"><strong>Patient ${a.patient_id}</strong><br>${a.message}</div>`
+                    ).join('');
+                }
+            } catch (e) {
+                document.getElementById('alerts').innerHTML = 'Erreur de chargement';
+            }
+        }
+
+        async function chargerVitals() {
+            try {
+                const res = await fetch(`${API_VITALS}/vitals`);
+                const vitals = await res.json();
+                const container = document.getElementById('vitals');
+                if (vitals.length === 0) {
+                    container.innerHTML = '<p>Aucune mesure</p>';
+                } else {
+                    container.innerHTML = vitals.slice(0, 10).map(v =>
+                        `<div class="vital-item"><strong>Patient ${v.patient_id}</strong> - ${v.type_mesure}: ${v.valeur} ${v.unite || ''}</div>`
+                    ).join('');
+                }
+            } catch (e) {
+                document.getElementById('vitals').innerHTML = 'Erreur';
+            }
+        }
+
+        // WebSocket pour alertes temps réel
+        try {
+            const ws = new WebSocket('ws://localhost:8004/ws/alerts');
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'new_alert') {
+                    chargerAlertes();
+                }
+            };
+        } catch (e) {}
+
+        chargerAlertes();
+        chargerVitals();
+        setInterval(chargerAlertes, 5000);
+        setInterval(chargerVitals, 5000);
+    </script>
+</body>
+</html>

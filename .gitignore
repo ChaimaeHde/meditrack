@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+.vscode/
+.idea/
+*.log
+node_modules/
+mysql_data/
