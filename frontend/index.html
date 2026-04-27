@@ -4,30 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediTrack</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, Arial, sans-serif; background: #f0f4f8; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; }
-        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h1 { color: #2563eb; margin-bottom: 20px; }
-        h2 { color: #374151; margin-bottom: 15px; font-size: 18px; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; }
-        button { background: #2563eb; color: white; border: none; cursor: pointer; font-weight: 600; }
-        button:hover { background: #1d4ed8; }
+        body { font-family: -apple-system, Arial, sans-serif; background: #f0f4f8; padding: 0; min-height: 100vh; }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+        .header { 
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 0 0 24px 24px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+        .header img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+        .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+        .header p { font-size: 14px; opacity: 0.95; margin-top: 4px; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        h2 { color: #374151; margin-bottom: 15px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; font-family: inherit; }
+        input:focus, select:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        button { background: #2563eb; color: white; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        button:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn-secondary { background: #10b981; }
+        .btn-secondary:hover { background: #059669; }
         .alert { padding: 12px; border-radius: 8px; margin: 8px 0; }
         .alert-critique { background: #fee2e2; color: #991b1b; border-left: 4px solid #dc2626; }
         .alert-haute { background: #fed7aa; color: #9a3412; border-left: 4px solid #ea580c; }
         .alert-moderee { background: #fef3c7; color: #92400e; border-left: 4px solid #d97706; }
         .vital-item { padding: 10px; border-bottom: 1px solid #e5e7eb; }
+        .vital-item:last-child { border-bottom: none; }
         .success { background: #d1fae5; color: #065f46; padding: 10px; border-radius: 8px; margin: 10px 0; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+        .footer { text-align: center; padding: 20px; color: #9ca3af; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🏥 MediTrack</h1>
+    <div class="header">
+        <img src="logo.jpg" alt="MediTrack Logo">
+        <h1>MediTrack</h1>
+        <p>Suivi des Patients Chroniques</p>
+    </div>
 
+    <div class="container">
         <div class="card">
-            <h2>Saisir une mesure</h2>
+            <h2>📝 Saisir une mesure</h2>
             <select id="patient">
                 <option value="1">Ahmed Benali</option>
                 <option value="2">Fatima Alaoui</option>
@@ -45,26 +72,46 @@
         </div>
 
         <div class="card">
-            <h2>Alertes récentes</h2>
+            <h2>📄 Rapport hebdomadaire</h2>
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 10px;">
+                Téléchargez un rapport PDF des 7 derniers jours pour un patient.
+            </p>
+            <select id="patient-rapport">
+                <option value="1">Ahmed Benali</option>
+                <option value="2">Fatima Alaoui</option>
+                <option value="3">Mohamed Tazi</option>
+            </select>
+            <button class="btn-secondary" onclick="telechargerRapport()">
+                📥 Télécharger le rapport PDF
+            </button>
+        </div>
+
+        <div class="card">
+            <h2>🔔 Alertes récentes <span class="badge badge-info" id="alert-count">0</span></h2>
             <div id="alerts">Chargement...</div>
         </div>
 
         <div class="card">
-            <h2>Dernières mesures</h2>
+            <h2>📊 Dernières mesures</h2>
             <div id="vitals">Chargement...</div>
+        </div>
+
+        <div class="footer">
+            MediTrack © 2026 - ENSAM Rabat
         </div>
     </div>
 
     <script>
         const API_VITALS = 'http://localhost:8002';
         const API_ALERTS = 'http://localhost:8004';
+        const API_REPORTING = 'http://localhost:8005';
 
         async function ajouterMesure() {
             const patient_id = parseInt(document.getElementById('patient').value);
             const type_mesure = document.getElementById('type').value;
             const valeur = parseFloat(document.getElementById('valeur').value);
 
-            if (!valeur) {
+            if (!valeur && valeur !== 0) {
                 alert('Saisissez une valeur');
                 return;
             }
@@ -76,17 +123,24 @@
                     body: JSON.stringify({patient_id, type_mesure, valeur})
                 });
                 if (res.ok) {
-                    document.getElementById('message').innerHTML = '<div class="success">✓ Mesure enregistrée</div>';
+                    document.getElementById('message').innerHTML = '<div class="success">✓ Mesure enregistrée avec succès</div>';
                     document.getElementById('valeur').value = '';
                     setTimeout(() => {
                         document.getElementById('message').innerHTML = '';
                         chargerAlertes();
                         chargerVitals();
-                    }, 1000);
+                    }, 1500);
+                } else {
+                    alert('Erreur lors de l\'enregistrement');
                 }
             } catch (e) {
-                alert('Erreur: ' + e.message);
+                alert('Erreur de connexion: ' + e.message);
             }
+        }
+
+        function telechargerRapport() {
+            const patient_id = document.getElementById('patient-rapport').value;
+            window.open(`${API_REPORTING}/reports/weekly/${patient_id}`, '_blank');
         }
 
         async function chargerAlertes() {
@@ -94,15 +148,19 @@
                 const res = await fetch(`${API_ALERTS}/alerts`);
                 const alerts = await res.json();
                 const container = document.getElementById('alerts');
+                document.getElementById('alert-count').textContent = alerts.length;
                 if (alerts.length === 0) {
-                    container.innerHTML = '<p>Aucune alerte</p>';
+                    container.innerHTML = '<p style="color: #6b7280; text-align: center;">Aucune alerte récente</p>';
                 } else {
                     container.innerHTML = alerts.slice(0, 5).map(a =>
-                        `<div class="alert alert-${a.severite}"><strong>Patient ${a.patient_id}</strong><br>${a.message}</div>`
+                        `<div class="alert alert-${a.severite}">
+                            <strong>Patient ${a.patient_id}</strong><br>
+                            ${a.message}
+                        </div>`
                     ).join('');
                 }
             } catch (e) {
-                document.getElementById('alerts').innerHTML = 'Erreur de chargement';
+                document.getElementById('alerts').innerHTML = '<p style="color: #dc2626;">Erreur de chargement</p>';
             }
         }
 
@@ -112,18 +170,19 @@
                 const vitals = await res.json();
                 const container = document.getElementById('vitals');
                 if (vitals.length === 0) {
-                    container.innerHTML = '<p>Aucune mesure</p>';
+                    container.innerHTML = '<p style="color: #6b7280; text-align: center;">Aucune mesure enregistrée</p>';
                 } else {
                     container.innerHTML = vitals.slice(0, 10).map(v =>
-                        `<div class="vital-item"><strong>Patient ${v.patient_id}</strong> - ${v.type_mesure}: ${v.valeur} ${v.unite || ''}</div>`
+                        `<div class="vital-item">
+                            <strong>Patient ${v.patient_id}</strong> - ${v.type_mesure}: ${v.valeur} ${v.unite || ''}
+                        </div>`
                     ).join('');
                 }
             } catch (e) {
-                document.getElementById('vitals').innerHTML = 'Erreur';
+                document.getElementById('vitals').innerHTML = '<p style="color: #dc2626;">Erreur de chargement</p>';
             }
         }
 
-        // WebSocket pour alertes temps réel
         try {
             const ws = new WebSocket('ws://localhost:8004/ws/alerts');
             ws.onmessage = (event) => {
@@ -132,7 +191,9 @@
                     chargerAlertes();
                 }
             };
-        } catch (e) {}
+        } catch (e) {
+            console.log('WebSocket non disponible');
+        }
 
         chargerAlertes();
         chargerVitals();
