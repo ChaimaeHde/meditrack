@@ -26,7 +26,7 @@ MediTrack est une plateforme microservices permettant le suivi à domicile des p
 
 ### Installation
 ```bash
-git clone https://github.com/TON-USERNAME/meditrack.git
+git clone https://github.com/ChaimaeHde/meditrack.git
 cd meditrack
 docker-compose up --build
 ```
