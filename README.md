@@ -39,7 +39,7 @@ docker-compose up --build
 
 ##  Maquettes Figma
 Les maquettes complètes de l'interface mobile sont disponibles ici :
-[Voir les maquettes sur Figma]https://www.figma.com/design/2xnyg3qlfSg6V5UNMPdw1Q/MediTrack?node-id=2052-1969&t=3vafQCIuNv7mLpR1-1
+https://www.figma.com/design/2xnyg3qlfSg6V5UNMPdw1Q/MediTrack?node-id=2052-1969&t=3vafQCIuNv7mLpR1-1
 
 Les exports PNG sont également disponibles dans le dossier `maquette-appli/`.
 
