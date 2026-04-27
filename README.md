@@ -52,7 +52,7 @@ Les exports PNG sont également disponibles dans le dossier `maquette-appli/`.
 6. Téléchargez le rapport PDF du patient
 
 ##  Structure du projet
-\`\`\`
+```bash
 meditrack/
 ├── patient-profile-service/
 ├── vitals-ingestion-service/
@@ -65,12 +65,12 @@ meditrack/
 ├── rules.yaml              (règles métier)
 ├── init.sql                (initialisation BDD)
 └── README.md
-\`\`\`
+```
 
 ##  Arrêt
-\`\`\`bash
+```bash
 docker-compose down
-\`\`\`
+```
 
 ##  Technologies utilisées
 - **Backend** : Python 3.11, FastAPI, SQLAlchemy
